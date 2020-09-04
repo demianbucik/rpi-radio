@@ -2,11 +2,10 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-img
+        <v-img id="logo"
           :src="require('../assets/RadioV10Logo.png')"
           class="my-3"
           contain
-          height="200"
         />
       </v-col>
 
@@ -151,3 +150,14 @@
     }),
   }
 </script>
+
+<style>
+  #logo {
+    max-height: 250px;
+    margin-top: 15px !important;
+  }
+
+  a {
+    color: mediumspringgreen !important;
+  }
+</style>
