@@ -1,6 +1,7 @@
 artifacts/
 
 radio/radio
+tmp
 
 .DS_Store
 node_modules

@@ -1,63 +1,56 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
 
-	vlc "github.com/adrg/libvlc-go/v3"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+
+	"radio/api"
+	"radio/models"
 )
 
 func main() {
-	// Initialize libVLC. Additional command line arguments can be passed in
-	// to libVLC by specifying them in the Init function.
-	if err := vlc.Init("--no-video", "--quiet"); err != nil {
-		log.Fatal(err)
-	}
-	defer vlc.Release()
 
-	// Create a new player.
-	player, err := vlc.NewPlayer()
+	router := chi.NewRouter()
+	router.Use(middleware.Heartbeat("/ping"))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.Logger)
+
+	db, err := models.NewDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() {
-		player.Stop()
-		player.Release()
+
+	api.Init(db, router)
+
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal("ListenAndServe failed", err)
+		}
 	}()
 
-	// Add a media file from path or from URL.
-	// Set player media from path:
-	// media, err := player.LoadMediaFromPath("localpath/test.mp4")
-	// Set player media from URL:
-	media, err := player.LoadMediaFromURL("https://r3---sn-uxax3vhna-aw0l.googlevideo.com/videoplayback?expire=1596250428&ei=3IQkX-auDZ7n1gLhmZvgCA&ip=89.142.35.212&id=o-AAj3iKfW9GfiXRq8WeYjvzwQx5xur9r4lvJDeWL2h7Fd&itag=251&source=youtube&requiressl=yes&mh=j-&mm=31%2C29&mn=sn-uxax3vhna-aw0l%2Csn-hpa7znsz&ms=au%2Crdu&mv=m&mvi=3&pl=18&initcwndbps=805000&vprv=1&mime=audio%2Fwebm&gir=yes&clen=3903075&dur=244.001&lmt=1500105863731857&mt=1596228691&fvip=3&keepalive=yes&fexp=23883098&c=WEB&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cvprv%2Cmime%2Cgir%2Cclen%2Cdur%2Clmt&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=AG3C_xAwRAIgU3z0xJLS4Q9u62cBqE_qpmrQrzagYcC-lJJhCV_kMUkCIF6z7otDHjvizADwYf9ON8eN2d5sYohTzkU_jiAOO6Yy&sig=AOq0QJ8wRAIgbOpiRHzVNOiqC3lpOVoZ2Kjq8oP7VnaWCpFuGIggYt0CIBPLi0gAWwtgZnto_jscSxEWJ38IfZ8VWJ1PUixEsqla&ratebypass=yes")
-	// media, err := player.LoadMediaFromURL("https://www.youtube.com/watch?v=aIHF7u9Wwiw")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer media.Release()
+	log.Println("ListenAndServe")
 
-	// Start playing the media.
-	err = player.Play()
-	if err != nil {
-		log.Fatal(err)
-	}
+	waitForShutdown(srv)
+}
 
-	// Retrieve player event manager.
-	manager, err := player.EventManager()
-	if err != nil {
-		log.Fatal(err)
-	}
+func waitForShutdown(srv *http.Server) {
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt)
 
-	// Register the media end reached event with the event manager.
-	quit := make(chan struct{})
-	eventCallback := func(event vlc.Event, userData interface{}) {
-		close(quit)
+	<-shutdown
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Fatal("Server shutdown failed", err)
 	}
-
-	eventID, err := manager.Attach(vlc.MediaPlayerEndReached, eventCallback, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer manager.Detach(eventID)
-
-	<-quit
+	log.Println("Server shutdown")
 }
