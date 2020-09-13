@@ -11,7 +11,7 @@
       <h2 class="display-2 mb-3"> Welcome to</h2>
       <h1 class="display-3 font-weight-bold mb-3">Radio Vipavska 10</h1>
       <h3 class="display-1 mb-3"> No meme music!</h3>
-
+  
       <p>
         For any and all information turn to
         <br><b>Demian</b> or <b>Andrej</b>.
