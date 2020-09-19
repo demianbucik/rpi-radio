@@ -14,21 +14,39 @@
             </v-list-item>
             
             <v-divider></v-divider>
-            
-            <v-list class="BtnMenu">  
-                <v-list-group 
-                 v-for="item in items"
-                 :key="item.title"
-                 v-model="item.active"
-                 no-action
-                 >
-                    <template v-slot:activator>
-                        <v-icon>mdi-format-list-bulleted-square</v-icon>
-                        <v-list-item-title class="BtnTitle" v-text="item.title"></v-list-item-title>
-                    </template>
-                </v-list-group>
-            </v-list>
 
+            <v-expansion-panels
+             popout
+             v-model="panel"
+             multiple
+            >
+                <v-expansion-panel class="Panels">
+                    <v-expansion-panel-header>Player</v-expansion-panel-header>
+                    <v-expansion-panel-content id="Player">
+                        <SidebarPlayer/>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+
+               <v-expansion-panel class="Panels">
+                   <v-expansion-panel-header>Playlists</v-expansion-panel-header>
+                   <v-expansion-panel-content>
+                       <v-btn class="BtnPlaylist">Playlist 1</v-btn>
+                       <v-btn class="BtnPlaylist">Playlist 2</v-btn>
+                       <v-btn class="BtnPlaylist">Playlist 3</v-btn>
+                       <v-btn class="BtnPlaylist">Playlist 4</v-btn>
+                       <v-btn class="BtnPlaylist">Playlist 5</v-btn>
+                    </v-expansion-panel-content>
+               </v-expansion-panel>
+
+               <v-expansion-panel class="Panels">
+                   <v-expansion-panel-header>Songs</v-expansion-panel-header>
+                   <v-expansion-panel-content>
+                       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                   </v-expansion-panel-content>
+               </v-expansion-panel>
+            
+            </v-expansion-panels>            
+            
             <v-btn class="BtnHome" block color="secondary" dark>Home</v-btn>
 
         </v-navigation-drawer>
@@ -37,26 +55,18 @@
 
 <script>
 //https://vuetifyjs.com/en/components/lists/
+import SidebarPlayer from './SidebarPlayer';
+
   export default {
     name: 'Sidebar',    
-    
+    components: {
+        SidebarPlayer,
+    },
+
     data() {
         return{
             state: false,
-            items: [
-                {
-                    action: '',
-                    title: 'Player'
-                },
-                {
-                    action: '',
-                    title: 'Play lists'
-                },
-                {
-                    action: '',
-                    title: 'Songs'
-                }
-            ]
+            
         }
     }
 }
@@ -84,13 +94,17 @@
         font-size: 20px !important;
     }
 
-    .BtnMenu {
-        margin-top: 20px !important;
+    #Player {
+        margin: 0px -35px 0px -35px;
     }
 
-    .BtnTitle {
-        margin-left: 10px;
-        font-size: 20px !important;
+    .Panels {
+        margin-top: 10px;
+        background-color: #48aa83 !important;
+    }
+
+    .BtnPlaylist {
+        margin-top: 5px;
     }
 
     .BtnHome{
