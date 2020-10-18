@@ -21,18 +21,18 @@ func FromDto(dto *TrackDto) *models.Track {
 	return track
 }
 
-func ToDtos(tracks []models.Track) []TrackDto {
-	var dtos []TrackDto
+func ToDtos(tracks []*models.Track) []*TrackDto {
+	var dtos []*TrackDto
 	for _, track := range tracks {
-		dtos = append(dtos, *ToDto(&track))
+		dtos = append(dtos, ToDto(track))
 	}
 	return dtos
 }
 
-func FromDtos(dtos []TrackDto) []models.Track {
-	var tracks []models.Track
+func FromDtos(dtos []*TrackDto) []*models.Track {
+	var tracks []*models.Track
 	for _, dto := range dtos {
-		tracks = append(tracks, *FromDto(&dto))
+		tracks = append(tracks, FromDto(dto))
 	}
 	return tracks
 }
@@ -43,10 +43,10 @@ func ToTrackDto(plTrack *models.PlaylistTrack) *TrackDto {
 	return dto
 }
 
-func ToTrackDtos(plTracks []models.PlaylistTrack) []TrackDto {
-	var dtos []TrackDto
+func ToTrackDtos(plTracks []*models.PlaylistTrack) []*TrackDto {
+	var dtos []*TrackDto
 	for _, plTrack := range plTracks {
-		dtos = append(dtos, *ToTrackDto(&plTrack))
+		dtos = append(dtos, ToTrackDto(plTrack))
 	}
 	return dtos
 }

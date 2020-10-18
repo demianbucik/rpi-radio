@@ -16,13 +16,13 @@ func (a *Api) TrackCtx(next http.Handler) http.Handler {
 		idStr := chi.URLParam(r, "trackId")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			utils.BadRequest(w, err)
+			utils.BadRequest(w, r, err)
 			return
 		}
 
 		var track models.Track
 		if err := a.db.First(&track, id).Error; err != nil {
-			utils.BadRequest(w, err)
+			utils.BadRequest(w, r, err)
 			return
 		}
 

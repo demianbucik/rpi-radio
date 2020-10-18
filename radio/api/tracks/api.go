@@ -1,7 +1,9 @@
 package tracks
 
 import (
+	"errors"
 	"net/http"
+	"radio/common/youtube"
 
 	"github.com/segmentio/encoding/json"
 	"gorm.io/gorm"
@@ -11,18 +13,19 @@ import (
 )
 
 type Api struct {
-	db *gorm.DB
+	db      *gorm.DB
+	youtube *youtube.Client
 }
 
 func New(db *gorm.DB) *Api {
-	return &Api{db: db}
+	return &Api{db: db, youtube: &youtube.Client{}}
 }
 
 func (a *Api) List(w http.ResponseWriter, r *http.Request) {
-	var tracks []models.Track
+	var tracks []*models.Track
 
 	if err := a.db.Find(&tracks).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -33,26 +36,33 @@ func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
 	var dto TrackDto
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
 	track := FromDto(&dto)
+	if track.Name == "" {
+		title, err := a.youtube.GetVideoTitle(track.Url)
+		if err != nil {
+			utils.ServerError(w, r, err)
+			return
+		}
+		track.Name = title
+	}
 
 	if err := a.db.Create(track).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
 	utils.Respond(w, http.StatusCreated, ToDto(track))
-
 }
 
 func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 	var dto TrackDto
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -62,18 +72,38 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 	track.ID = trackId
 
 	if err := a.db.Model(track).Updates(track).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
 	utils.Respond(w, http.StatusOK, ToDto(track))
 }
 
+var errTrackProtected = errors.New("cannot delete, track is used in a playlist")
+
 func (a *Api) Delete(w http.ResponseWriter, r *http.Request) {
 	track := r.Context().Value("track").(*models.Track)
 
-	if err := a.db.Delete(&models.Track{}, track.ID).Error; err != nil {
-		utils.ServerError(w, err)
+	err := a.db.Transaction(func(tx *gorm.DB) error {
+		var pt []*models.PlaylistTrack
+		if err := tx.Find(&pt, "track_id = ?", track.ID).Error; err != nil {
+			return err
+		}
+		if len(pt) > 0 {
+			return errTrackProtected
+		}
+
+		if err := tx.Delete(&models.Track{}, track.ID).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err == errTrackProtected {
+		utils.BadRequest(w, r, err)
+		return
+	}
+	if err != nil {
+		utils.ServerError(w, r, err)
 		return
 	}
 
