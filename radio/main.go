@@ -2,55 +2,51 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/apex/log"
 
 	"radio/api"
+	"radio/app"
+	"radio/app/config"
 	"radio/models"
 )
 
 func main() {
-
-	router := chi.NewRouter()
-	router.Use(middleware.Heartbeat("/ping"))
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Logger)
+	app.Startup()
 
 	db, err := models.NewDB()
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("Opening DB failed")
 	}
 
-	api.Init(db, router)
+	router := api.NewRouter(db)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", config.Env.PORT),
 		Handler: router,
 	}
 
-	go func() {
-		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatal("ListenAndServe failed", err)
-		}
-	}()
-
-	log.Println("ListenAndServe")
-
-	waitForShutdown(srv)
+	listenAndServe(srv)
 }
 
-func waitForShutdown(srv *http.Server) {
+func listenAndServe(srv *http.Server) {
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.WithError(err).Fatal("ListenAndServe failed")
+		}
+	}()
+	log.Info("Listen and serve")
+
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt)
 
 	<-shutdown
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Fatal("Server shutdown failed", err)
+		log.WithError(err).Fatal("Server shutdown failed")
 	}
-	log.Println("Server shutdown")
+	log.Info("Server shutdown")
 }
