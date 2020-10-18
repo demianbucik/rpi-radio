@@ -21,20 +21,23 @@ func Respond(w http.ResponseWriter, status int, data interface{}) {
 	}
 }
 
-func RespondError(w http.ResponseWriter, status int, data interface{}) {
-	switch m := data.(type) {
-	case error:
-		data = Msg{Error: m.Error()}
-	case string:
-		data = Msg{Error: m}
+func RespondError(w http.ResponseWriter, r *http.Request, status int, err interface{}) {
+	if requestCtx, _ := r.Context().Value(RequestCtxKey).(*RequestContext); requestCtx != nil {
+		requestCtx.Error = err
 	}
-	Respond(w, status, data)
+	switch m := err.(type) {
+	case error:
+		err = Msg{Error: m.Error()}
+	case string:
+		err = Msg{Error: m}
+	}
+	Respond(w, status, err)
 }
 
-func ServerError(w http.ResponseWriter, data interface{}) {
-	RespondError(w, http.StatusInternalServerError, data)
+func ServerError(w http.ResponseWriter, r *http.Request, err interface{}) {
+	RespondError(w, r, http.StatusInternalServerError, err)
 }
 
-func BadRequest(w http.ResponseWriter, data interface{}) {
-	RespondError(w, http.StatusBadRequest, data)
+func BadRequest(w http.ResponseWriter, r *http.Request, err interface{}) {
+	RespondError(w, r, http.StatusBadRequest, err)
 }
