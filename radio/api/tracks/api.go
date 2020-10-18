@@ -3,7 +3,6 @@ package tracks
 import (
 	"errors"
 	"net/http"
-	"radio/common/youtube"
 
 	"github.com/segmentio/encoding/json"
 	"gorm.io/gorm"
@@ -13,12 +12,11 @@ import (
 )
 
 type Api struct {
-	db      *gorm.DB
-	youtube *youtube.Client
+	db *gorm.DB
 }
 
 func New(db *gorm.DB) *Api {
-	return &Api{db: db, youtube: &youtube.Client{}}
+	return &Api{db: db}
 }
 
 func (a *Api) List(w http.ResponseWriter, r *http.Request) {
@@ -41,14 +39,6 @@ func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	track := FromDto(&dto)
-	if track.Name == "" {
-		title, err := a.youtube.GetVideoTitle(track.Url)
-		if err != nil {
-			utils.ServerError(w, r, err)
-			return
-		}
-		track.Name = title
-	}
 
 	if err := a.db.Create(track).Error; err != nil {
 		utils.ServerError(w, r, err)
