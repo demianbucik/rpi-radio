@@ -16,13 +16,13 @@ func (a *Api) PlaylistCtx(next http.Handler) http.Handler {
 		idStr := chi.URLParam(r, "playlistId")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			utils.BadRequest(w, err)
+			utils.BadRequest(w, r, err)
 			return
 		}
 
 		var playlist models.Playlist
 		if err := a.db.First(&playlist, id).Error; err != nil {
-			utils.BadRequest(w, err)
+			utils.BadRequest(w, r, err)
 			return
 		}
 
@@ -38,14 +38,14 @@ func (a *Api) PlaylistTrackCtx(next http.Handler) http.Handler {
 		positionStr := chi.URLParam(r, "position")
 		position, err := strconv.Atoi(positionStr)
 		if err != nil {
-			utils.BadRequest(w, err)
+			utils.BadRequest(w, r, err)
 			return
 		}
 
 		var playlistTrack models.PlaylistTrack
 		err = a.db.First(&playlistTrack, "playlist_id = ? AND position = ?", playlist.ID, position).Error
 		if err != nil {
-			utils.ServerError(w, err)
+			utils.ServerError(w, r, err)
 			return
 		}
 

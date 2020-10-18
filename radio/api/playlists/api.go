@@ -19,33 +19,19 @@ func New(db *gorm.DB) *Api {
 	return &Api{db: db}
 }
 
-func (a *Api) List(w http.ResponseWriter, _ *http.Request) {
-	var playlists []models.Playlist
+func (a *Api) List(w http.ResponseWriter, r *http.Request) {
+	var playlists []*models.Playlist
 
 	err := a.db.Preload("PlaylistTracks", func(db *gorm.DB) *gorm.DB { return db.Order("position") }).
 		Preload("PlaylistTracks.Track").Find(&playlists).Error
 
 	if err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
 	utils.Respond(w, http.StatusOK, ToDtos(playlists))
 }
-
-// func (a *Api) ListTracks(w http.ResponseWriter, r *http.Request) {
-// 	var playlistTracks []models.PlaylistTrack
-//
-// 	playlist := r.Context().Value("playlist").(*models.Playlist)
-//
-// 	err := a.db.Order("position").Find(&playlistTracks, "playlist_id = ?", playlist.ID).Error
-// 	if err != nil {
-// 		utils.ServerError(w, err)
-// 		return
-// 	}
-//
-// 	utils.Respond(w, http.StatusOK, tracks.ToTrackDtos(playlistTracks))
-// }
 
 func (a *Api) Get(w http.ResponseWriter, r *http.Request) {
 	var playlist models.Playlist
@@ -56,7 +42,7 @@ func (a *Api) Get(w http.ResponseWriter, r *http.Request) {
 		Preload("PlaylistTracks.Track").Find(&playlist, id).Error
 
 	if err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -67,14 +53,14 @@ func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
 	var dto PlaylistDto
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
 	playlist := FromDto(&dto)
 
 	if err := a.db.Create(playlist).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -85,7 +71,7 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 	var dto PlaylistDto
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -95,7 +81,7 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 	playlist.ID = id
 
 	if err := a.db.Model(playlist).Updates(playlist).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -105,9 +91,17 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 func (a *Api) Delete(w http.ResponseWriter, r *http.Request) {
 	playlist := r.Context().Value("playlist").(*models.Playlist)
 
-	// TODO: on delete cascade
-	if err := a.db.Delete(&playlist).Error; err != nil {
-		utils.ServerError(w, err)
+	err := a.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&models.PlaylistTrack{}, "playlist_id = ?", playlist.ID).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&playlist).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -123,7 +117,7 @@ func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 	// TODO: refactor
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -173,7 +167,7 @@ func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 
 	})
 	if err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -188,7 +182,7 @@ func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -197,7 +191,7 @@ func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 	var pt models.PlaylistTrack
 
 	if err := a.db.Find(&pt, "playlist_id = ? AND position = ?", playlist.ID, dto.Position).Error; err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -222,7 +216,7 @@ func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 
@@ -243,7 +237,7 @@ func (a *Api) DeleteTrack(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.ServerError(w, err)
+		utils.ServerError(w, r, err)
 		return
 	}
 

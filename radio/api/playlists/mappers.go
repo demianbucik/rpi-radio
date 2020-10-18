@@ -23,18 +23,26 @@ func FromDto(dto *PlaylistDto) *models.Playlist {
 	return playlist
 }
 
-func ToDtos(playlists []models.Playlist) []PlaylistDto {
-	var dtos []PlaylistDto
+func ToDtos(playlists []*models.Playlist) []*PlaylistDto {
+	var dtos []*PlaylistDto
 	for _, playlist := range playlists {
-		dtos = append(dtos, *ToDto(&playlist))
+		dtos = append(dtos, ToDto(playlist))
 	}
 	return dtos
 }
 
-func FromDtos(dtos []PlaylistDto) []models.Playlist {
-	var playlists []models.Playlist
+func FromDtos(dtos []*PlaylistDto) []*models.Playlist {
+	var playlists []*models.Playlist
 	for _, dto := range dtos {
-		playlists = append(playlists, *FromDto(&dto))
+		playlists = append(playlists, FromDto(dto))
 	}
 	return playlists
+}
+
+func GetTracks(playlist *models.Playlist) []*models.Track {
+	var ts []*models.Track
+	for _, pt := range playlist.PlaylistTracks {
+		ts = append(ts, pt.Track)
+	}
+	return ts
 }
