@@ -17,18 +17,21 @@
 
             <v-expansion-panels
              popout
-             v-model="panel"
              multiple
             >
                 <v-expansion-panel class="Panels">
-                    <v-expansion-panel-header>Player</v-expansion-panel-header>
+                    <v-expansion-panel-header>
+                        <v-btn class="Btns" @click="$router.push('/player')">Player</v-btn>
+                    </v-expansion-panel-header>
                     <v-expansion-panel-content id="Player">
                         <SidebarPlayer/>
                     </v-expansion-panel-content>
                 </v-expansion-panel>
 
                <v-expansion-panel class="Panels">
-                   <v-expansion-panel-header>Playlists</v-expansion-panel-header>
+                    <v-expansion-panel-header>
+                       <v-btn class="Btns" @click="$router.push('/player')">Playlists</v-btn>
+                    </v-expansion-panel-header>
                    <v-expansion-panel-content>
                        <v-btn class="BtnPlaylist">Playlist 1</v-btn>
                        <v-btn class="BtnPlaylist">Playlist 2</v-btn>
@@ -39,7 +42,9 @@
                </v-expansion-panel>
 
                <v-expansion-panel class="Panels">
-                   <v-expansion-panel-header>Songs</v-expansion-panel-header>
+                   <v-expansion-panel-header>
+                       <v-btn class="Btns" @click="$router.push('/player')">Songs</v-btn>
+                    </v-expansion-panel-header>
                    <v-expansion-panel-content>
                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                    </v-expansion-panel-content>
@@ -47,15 +52,14 @@
             
             </v-expansion-panels>            
             
-            <v-btn class="BtnHome" block color="secondary" dark>Home</v-btn>
+            <v-btn class="BtnHome" block color="secondary" dark @click="$router.push('/')">Home</v-btn>
 
         </v-navigation-drawer>
     </div>  
 </template>
 
 <script>
-//https://vuetifyjs.com/en/components/lists/
-import SidebarPlayer from './SidebarPlayer';
+  import SidebarPlayer from './SidebarPlayer';
 
   export default {
     name: 'Sidebar',    
@@ -65,8 +69,7 @@ import SidebarPlayer from './SidebarPlayer';
 
     data() {
         return{
-            state: false,
-            
+            state: false,            
         }
     }
 }
@@ -110,5 +113,11 @@ import SidebarPlayer from './SidebarPlayer';
     .BtnHome{
         position: fixed !important;
         bottom: 0;
+    }
+
+    .Btns {
+        margin-left: -10px;
+        margin-right: 10px;
+        background-color: #6ce4b6 !important;
     }
 </style>

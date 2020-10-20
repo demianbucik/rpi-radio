@@ -2,26 +2,24 @@
   <v-app>
     <v-main>
       <Sidebar/>
-      <Main/>
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Main from './components/Main';
-import Sidebar from './components/Sidebar'
+  import Sidebar from './components/Sidebar'
 
-export default {
-  name: 'App',
+  export default {
+    name: 'App',
 
-  components: {
-    Main,
-    Sidebar,
-  },
+    components: {
+     Sidebar,
+    },
 
-  data: () => ({
-    //
-  }),
+    data: () => ({
+      //
+    }),
 };
 </script>
 
