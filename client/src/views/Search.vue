@@ -81,8 +81,9 @@
     }
 
     #SearchResults {
-        margin-left: 10%;
-        margin-right: 10%;
+        background-color: green; 
+        margin-left: 25%;
+        margin-right: 25%;
         max-width: 50%;    
     }
 </style>
