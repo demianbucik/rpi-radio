@@ -14,4 +14,4 @@ build:
 help:
 	@echo "help"
 
-.DEFAULT_TARGET := help
+.DEFAULT_GOAL := help
