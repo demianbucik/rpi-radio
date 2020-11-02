@@ -9,6 +9,7 @@ build/
 radio/radio
 radio.db
 
+env.toml
 .env
 
 # Editor directories and files
