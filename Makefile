@@ -21,7 +21,6 @@ build_client:
 
 build: build_server build_client
 
-
 deploy:
 	mkdir -p build/$(BUILD_NAME)/config
 	cp scripts/run.sh build/$(BUILD_NAME)
@@ -40,7 +39,7 @@ deploy:
 		sudo systemctl start radio && \
 		rm -r $(BUILD_NAME) \
 	"
-	rm build/$(BUILD_NAME) || true
+	rm build/$(BUILD_NAME)
 
 help:
 	@echo "help"
