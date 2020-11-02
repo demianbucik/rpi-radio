@@ -1,12 +1,15 @@
 package config
 
 import (
+	"os"
+	"path"
+
 	"github.com/BurntSushi/toml"
 	"github.com/apex/log"
 )
 
 const (
-	configFile = "config/env.toml"
+	configFile = "env.toml"
 )
 
 var (
@@ -14,7 +17,11 @@ var (
 )
 
 func Parse() {
-	if _, err := toml.DecodeFile(configFile, &Env); err != nil {
+	configDir := os.Getenv("CONF_DIR")
+	if configDir == "" {
+		configDir = "./config"
+	}
+	if _, err := toml.DecodeFile(path.Join(configDir, configFile), &Env); err != nil {
 		log.WithError(err).Fatal("Failed to parse config")
 	}
 }
