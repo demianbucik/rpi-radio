@@ -1,10 +1,15 @@
 artifacts/
 vendor/
 
-radio/radio
-tmp
+tmp/
+node_modules/
+dist/
+build/
 
+radio/radio
 radio.db
+
+.env
 
 # Editor directories and files
 .idea
