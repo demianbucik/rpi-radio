@@ -19,15 +19,16 @@ build_server:
 build_client:
 	npm --prefix client run build
 
-build_prod: #build_server build_client
+build: build_server build_client
+
+
+deploy:
 	mkdir -p build/$(BUILD_NAME)/config
 	cp scripts/run.sh build/$(BUILD_NAME)
 	cp artifacts/radio build/$(BUILD_NAME)
 	cp radio/config/prod.env.toml build/$(BUILD_NAME)/config/env.toml
 	cp -r client/dist build/$(BUILD_NAME)
 	tar --remove-files -czf build/$(BUILD_NAME).tar.gz -C build $(BUILD_NAME)
-
-deploy: build_prod
 	scp build/$(BUILD_NAME).tar.gz $(USER)@$(REMOTE_ADDR):/app/radio
 	ssh $(USER)@$(REMOTE_ADDR) " \
 		cd /app/radio && \
