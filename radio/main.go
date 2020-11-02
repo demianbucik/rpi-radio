@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/apex/log"
 
@@ -42,7 +43,7 @@ func listenAndServe(srv *http.Server) {
 	log.Info("Listen and serve")
 
 	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	<-shutdown
 	if err := srv.Shutdown(context.Background()); err != nil {
