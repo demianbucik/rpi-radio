@@ -39,7 +39,7 @@ deploy:
 		sudo systemctl start radio && \
 		rm -r $(BUILD_NAME) \
 	"
-	rm build/$(BUILD_NAME)
+	rm build/$(BUILD_NAME).tar.gz
 
 help:
 	@echo "help"
