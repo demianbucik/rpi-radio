@@ -16,6 +16,7 @@ import (
 func NewRouter(db *gorm.DB) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(utils.RequestCtx)
+	router.Use(utils.CORS)
 	router.Use(utils.Logger)
 	router.Use(utils.Recoverer)
 	router.Use(middleware.Heartbeat("/ping"))
