@@ -28,4 +28,8 @@
     background-image: linear-gradient(to bottom right, #696969 70%, #4b4b4b 100%) !important;
     color: whitesmoke !important;
   }
+
+   ::selection {
+    background: rgba(43, 43, 43, 0.459) ;
+  }
   </style>

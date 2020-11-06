@@ -33,6 +33,7 @@
     }),
   }
 </script>
+
 <style>
   #logo {
     max-height: 250px;
@@ -41,9 +42,5 @@
 
   a {
     color: mediumspringgreen !important;
-  }
-
-  ::selection {
-    background: rgba(43, 43, 43, 0.459) !important;
   }
 </style>
