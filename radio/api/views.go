@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"gorm.io/gorm"
@@ -8,6 +10,7 @@ import (
 	"radio/api/playlists"
 	"radio/api/tracks"
 	"radio/api/utils"
+	"radio/app/config"
 )
 
 func NewRouter(db *gorm.DB) *chi.Mux {
@@ -22,6 +25,9 @@ func NewRouter(db *gorm.DB) *chi.Mux {
 
 	playlistRoutes(router, playlistsApi)
 	tracksRoutes(router, tracksApi)
+
+	fs := http.FileServer(http.Dir(config.Env.STATIC_FILES_DIR))
+	router.Handle("/*", fs)
 
 	return router
 }

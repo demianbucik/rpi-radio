@@ -1,0 +1,11 @@
+[Unit]
+Description=Music streaming for Raspberry Pi.
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /app/radio/run.sh
+StandardOutput=append:/app/radio/logs/radio.log
+StandardError=append:/app/radio/logs/radio.log
+
+[Install]
+WantedBy=multi-user.target

@@ -227,7 +227,7 @@ func (a *Api) DeleteTrack(w http.ResponseWriter, r *http.Request) {
 	pt := r.Context().Value("playlistTrack").(*models.PlaylistTrack)
 
 	err := a.db.Transaction(func(tx *gorm.DB) error {
-		err := a.db.Delete(&pt).Error
+		err := tx.Delete(&pt).Error
 		if err != nil {
 			return err
 		}
