@@ -1,35 +1,35 @@
 <template>
   <v-app>
     <v-main>
-      <Sidebar/>
+      <Sidebar />
       <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-  import Sidebar from './components/Sidebar'
+import Sidebar from './components/Sidebar';
 
-  export default {
-    name: 'App',
+export default {
+  name: 'App',
 
-    components: {
-     Sidebar,
-    },
+  components: {
+    Sidebar,
+  },
 
-    data: () => ({
-      //
-    }),
+  data: () => ({
+    //
+  }),
 };
 </script>
 
 <style>
-  .v-application {
-    background-image: linear-gradient(to bottom right, #696969 70%, #4b4b4b 100%) !important;
-    color: whitesmoke !important;
-  }
+.v-application {
+  background-image: linear-gradient(to bottom right, #696969 70%, #4b4b4b 100%) !important;
+  color: whitesmoke !important;
+}
 
-   ::selection {
-    background: rgba(43, 43, 43, 0.459) ;
-  }
-  </style>
+::selection {
+  background: rgba(43, 43, 43, 0.459);
+}
+</style>

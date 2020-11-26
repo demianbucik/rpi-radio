@@ -4,13 +4,13 @@
 
 <script>
 export default {
-  name: 'Player',
-  component: {},
-  data: function () {
+  name: 'SidebarTracks',
+  data() {
     return {
-      TrackName: 'sssss',
+      savedTracks: [],
     };
   },
+  components: {},
 };
 </script>
 
