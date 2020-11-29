@@ -26,14 +26,14 @@ func (a *Api) PlaylistCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "playlist", &playlist)
+		ctx := context.WithValue(r.Context(), utils.PlaylistCtxKey, &playlist)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func (a *Api) PlaylistTrackCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		playlist := r.Context().Value("playlist").(*models.Playlist)
+		playlist := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist)
 
 		positionStr := chi.URLParam(r, "position")
 		position, err := strconv.Atoi(positionStr)
@@ -49,7 +49,7 @@ func (a *Api) PlaylistTrackCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "playlistTrack", &playlistTrack)
+		ctx := context.WithValue(r.Context(), utils.PlaylistTrackCtxKey, &playlistTrack)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

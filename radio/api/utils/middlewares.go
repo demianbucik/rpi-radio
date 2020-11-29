@@ -19,7 +19,7 @@ func RequestCtx(next http.Handler) http.Handler {
 }
 
 func CORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		if origin := r.Header.Get("Origin"); origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
@@ -28,7 +28,8 @@ func CORS(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
-	})
+	}
+	return http.HandlerFunc(fn)
 }
 
 func Recoverer(next http.Handler) http.Handler {

@@ -26,7 +26,7 @@ func (a *Api) TrackCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "track", &track)
+		ctx := context.WithValue(r.Context(), utils.TrackCtxKey, &track)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

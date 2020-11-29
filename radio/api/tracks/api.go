@@ -27,7 +27,7 @@ func (a *Api) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Respond(w, http.StatusOK, ToDtos(tracks))
+	utils.Respond(w, http.StatusOK, TracksToDtos(tracks))
 }
 
 func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
@@ -38,14 +38,14 @@ func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	track := FromDto(&dto)
+	track := DtoToTrack(&dto)
 
 	if err := a.db.Create(track).Error; err != nil {
 		utils.ServerError(w, r, err)
 		return
 	}
 
-	utils.Respond(w, http.StatusCreated, ToDto(track))
+	utils.Respond(w, http.StatusCreated, TrackToDto(track))
 }
 
 func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
@@ -56,9 +56,9 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	trackId := r.Context().Value("track").(*models.Track).ID
+	trackId := r.Context().Value(utils.TrackCtxKey).(*models.Track).ID
 
-	track := FromDto(&dto)
+	track := DtoToTrack(&dto)
 	track.ID = trackId
 
 	if err := a.db.Model(track).Updates(track).Error; err != nil {
@@ -66,13 +66,13 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Respond(w, http.StatusOK, ToDto(track))
+	utils.Respond(w, http.StatusOK, TrackToDto(track))
 }
 
 var errTrackProtected = errors.New("cannot delete, track is used in a playlist")
 
 func (a *Api) Delete(w http.ResponseWriter, r *http.Request) {
-	track := r.Context().Value("track").(*models.Track)
+	track := r.Context().Value(utils.TrackCtxKey).(*models.Track)
 
 	err := a.db.Transaction(func(tx *gorm.DB) error {
 		var pt []*models.PlaylistTrack
