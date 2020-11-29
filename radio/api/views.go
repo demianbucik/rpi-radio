@@ -1,31 +1,39 @@
 package api
 
 import (
+	"compress/gzip"
 	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"gorm.io/gorm"
 
+	"radio/api/player"
 	"radio/api/playlists"
 	"radio/api/tracks"
 	"radio/api/utils"
 	"radio/app/config"
+	commonPlayer "radio/common/player"
 )
 
-func NewRouter(db *gorm.DB) *chi.Mux {
+func NewRouter(db *gorm.DB, p *commonPlayer.Player) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(utils.RequestCtx)
 	router.Use(utils.CORS)
 	router.Use(utils.Logger)
 	router.Use(utils.Recoverer)
+	router.Use(middleware.Compress(gzip.DefaultCompression))
 	router.Use(middleware.Heartbeat("/ping"))
 
 	playlistsApi := playlists.New(db)
 	tracksApi := tracks.New(db)
+	playerApi := player.New(db, p)
 
-	playlistRoutes(router, playlistsApi)
-	tracksRoutes(router, tracksApi)
+	router.Route("/api", func(r chi.Router) {
+		playlistRoutes(r, playlistsApi)
+		tracksRoutes(r, tracksApi)
+		playerRoutes(r, playerApi)
+	})
 
 	fs := http.FileServer(http.Dir(config.Env.STATIC_FILES_DIR))
 	router.Handle("/*", fs)
@@ -33,7 +41,26 @@ func NewRouter(db *gorm.DB) *chi.Mux {
 	return router
 }
 
-func playlistRoutes(router *chi.Mux, playlistsApi *playlists.Api) {
+func playerRoutes(router chi.Router, playerApi *player.Api) {
+	router.Route("/player", func(r chi.Router) {
+		r.Post("/play", playerApi.Play)
+		r.Post("/pause", playerApi.Pause)
+		r.Post("/stop", playerApi.Stop)
+		r.Post("/next", playerApi.Next)
+		r.Post("/previous", playerApi.Previous)
+
+		r.Post("/tracks", playerApi.EnqueueTracksOverride)
+		r.Put("/tracks", playerApi.EnqueueTracks)
+		r.Delete("/tracks/{position:[0-9]+}", playerApi.DeleteTrack)
+
+		r.Put("/position", playerApi.SetPosition)
+		r.Put("/volume", playerApi.SetVolume)
+
+		r.Get("/state", playerApi.State)
+	})
+}
+
+func playlistRoutes(router chi.Router, playlistsApi *playlists.Api) {
 	router.Route("/playlists", func(r chi.Router) {
 		r.Get("/", playlistsApi.List)
 		r.Post("/", playlistsApi.Create)
@@ -57,7 +84,7 @@ func playlistRoutes(router *chi.Mux, playlistsApi *playlists.Api) {
 	})
 }
 
-func tracksRoutes(router *chi.Mux, tracksApi *tracks.Api) {
+func tracksRoutes(router chi.Router, tracksApi *tracks.Api) {
 	router.Route("/tracks", func(r chi.Router) {
 		r.Get("/", tracksApi.List)
 		r.Post("/", tracksApi.Create)
