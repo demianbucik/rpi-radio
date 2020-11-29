@@ -30,13 +30,13 @@ func (a *Api) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Respond(w, http.StatusOK, ToDtos(playlists))
+	utils.Respond(w, http.StatusOK, PlaylistsToDtos(playlists))
 }
 
 func (a *Api) Get(w http.ResponseWriter, r *http.Request) {
 	var playlist models.Playlist
 
-	id := r.Context().Value("playlist").(*models.Playlist).ID
+	id := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist).ID
 
 	err := a.db.Preload("PlaylistTracks", func(db *gorm.DB) *gorm.DB { return db.Order("position") }).
 		Preload("PlaylistTracks.Track").Find(&playlist, id).Error
@@ -46,7 +46,7 @@ func (a *Api) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Respond(w, http.StatusOK, ToDto(&playlist))
+	utils.Respond(w, http.StatusOK, PlaylistToDto(&playlist))
 }
 
 func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
@@ -57,14 +57,14 @@ func (a *Api) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playlist := FromDto(&dto)
+	playlist := DtoToPlaylist(&dto)
 
 	if err := a.db.Create(playlist).Error; err != nil {
 		utils.ServerError(w, r, err)
 		return
 	}
 
-	utils.Respond(w, http.StatusCreated, ToDto(playlist))
+	utils.Respond(w, http.StatusCreated, PlaylistToDto(playlist))
 }
 
 func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +75,9 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.Context().Value("playlist").(*models.Playlist).ID
+	id := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist).ID
 
-	playlist := FromDto(&dto)
+	playlist := DtoToPlaylist(&dto)
 	playlist.ID = id
 
 	if err := a.db.Model(playlist).Updates(playlist).Error; err != nil {
@@ -85,11 +85,11 @@ func (a *Api) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Respond(w, http.StatusOK, ToDto(playlist))
+	utils.Respond(w, http.StatusOK, PlaylistToDto(playlist))
 }
 
 func (a *Api) Delete(w http.ResponseWriter, r *http.Request) {
-	playlist := r.Context().Value("playlist").(*models.Playlist)
+	playlist := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist)
 
 	err := a.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Delete(&models.PlaylistTrack{}, "playlist_id = ?", playlist.ID).Error; err != nil {
@@ -110,8 +110,8 @@ func (a *Api) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 	var dto struct {
-		Tracks   []uint `json:"tracks"`
-		Position *uint  `json:"position"`
+		Tracks   []int `json:"tracks"`
+		Position *int  `json:"position"`
 	}
 
 	// TODO: refactor
@@ -121,23 +121,23 @@ func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playlist := r.Context().Value("playlist").(*models.Playlist)
+	playlist := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist)
 
 	err := a.db.Transaction(func(tx *gorm.DB) error {
-		var pos uint
 		nTracks := len(dto.Tracks)
 
-		var count int64
-		err := tx.Model(&models.PlaylistTrack{}).Where("playlist_id = ?", playlist.ID).Count(&count).Error
+		var count64 int64
+		err := tx.Model(&models.PlaylistTrack{}).Where("playlist_id = ?", playlist.ID).Count(&count64).Error
 		if err != nil {
 			return err
 		}
 
-		if dto.Position == nil {
-			pos = uint(count)
-		} else {
+		count := int(count64)
+		pos := count
+
+		if dto.Position != nil {
 			pos = *dto.Position
-			if int64(pos) > count {
+			if pos > count {
 				return errors.New("invalid position")
 			}
 
@@ -151,7 +151,7 @@ func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 		var pts []*models.PlaylistTrack
 
 		for index, id := range dto.Tracks {
-			newPos := pos + uint(index)
+			newPos := pos + index
 			pts = append(pts, &models.PlaylistTrack{
 				PlaylistID: playlist.ID,
 				TrackID:    id,
@@ -177,8 +177,8 @@ func (a *Api) AddTracks(w http.ResponseWriter, r *http.Request) {
 // Reorder tracks
 func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 	var dto struct {
-		Position     uint `json:"position"`
-		InsertBefore uint `json:"insertBefore"`
+		Position     int `json:"position"`
+		InsertBefore int `json:"insertBefore"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
@@ -186,7 +186,7 @@ func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playlist := r.Context().Value("playlist").(*models.Playlist)
+	playlist := r.Context().Value(utils.PlaylistCtxKey).(*models.Playlist)
 
 	var pt models.PlaylistTrack
 
@@ -224,7 +224,7 @@ func (a *Api) ReorderTracks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Api) DeleteTrack(w http.ResponseWriter, r *http.Request) {
-	pt := r.Context().Value("playlistTrack").(*models.PlaylistTrack)
+	pt := r.Context().Value(utils.PlaylistTrackCtxKey).(*models.PlaylistTrack)
 
 	err := a.db.Transaction(func(tx *gorm.DB) error {
 		err := tx.Delete(&pt).Error

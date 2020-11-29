@@ -1,8 +1,10 @@
 package tracks
 
-import "radio/models"
+import (
+	"radio/models"
+)
 
-func ToDto(track *models.Track) *TrackDto {
+func TrackToDto(track *models.Track) *TrackDto {
 	return &TrackDto{
 		ID:        track.ID,
 		Name:      track.Name,
@@ -11,42 +13,41 @@ func ToDto(track *models.Track) *TrackDto {
 	}
 }
 
-func FromDto(dto *TrackDto) *models.Track {
-	track := &models.Track{
+func DtoToTrack(dto *TrackDto) *models.Track {
+	return &models.Track{
+		ID:        dto.ID,
 		Name:      dto.Name,
 		Url:       dto.Url,
 		Thumbnail: dto.Thumbnail,
 	}
-	track.ID = dto.ID
-	return track
 }
 
-func ToDtos(tracks []*models.Track) []*TrackDto {
+func TracksToDtos(tracks []*models.Track) []*TrackDto {
 	var dtos []*TrackDto
 	for _, track := range tracks {
-		dtos = append(dtos, ToDto(track))
+		dtos = append(dtos, TrackToDto(track))
 	}
 	return dtos
 }
 
-func FromDtos(dtos []*TrackDto) []*models.Track {
+func DtosToTracks(dtos []*TrackDto) []*models.Track {
 	var tracks []*models.Track
 	for _, dto := range dtos {
-		tracks = append(tracks, FromDto(dto))
+		tracks = append(tracks, DtoToTrack(dto))
 	}
 	return tracks
 }
 
-func ToTrackDto(plTrack *models.PlaylistTrack) *TrackDto {
-	dto := ToDto(plTrack.Track)
+func PlaylistTrackToDto(plTrack *models.PlaylistTrack) *TrackDto {
+	dto := TrackToDto(plTrack.Track)
 	dto.Position = plTrack.Position
 	return dto
 }
 
-func ToTrackDtos(plTracks []*models.PlaylistTrack) []*TrackDto {
+func PlaylistTracksToDtos(plTracks []*models.PlaylistTrack) []*TrackDto {
 	var dtos []*TrackDto
-	for _, plTrack := range plTracks {
-		dtos = append(dtos, ToTrackDto(plTrack))
+	for _, t := range plTracks {
+		dtos = append(dtos, PlaylistTrackToDto(t))
 	}
 	return dtos
 }

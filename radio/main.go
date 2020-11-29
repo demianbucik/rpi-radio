@@ -13,6 +13,7 @@ import (
 	"radio/api"
 	"radio/app"
 	"radio/app/config"
+	"radio/common/player"
 	"radio/models"
 )
 
@@ -24,22 +25,29 @@ func main() {
 		log.WithError(err).Fatal("Opening DB failed")
 	}
 
-	router := api.NewRouter(db)
+	p, err := player.New()
+	if err != nil {
+		log.WithError(err).Fatal("Opening VLC player failed")
+	}
+
+	router := api.NewRouter(db, p)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.Env.PORT),
 		Handler: router,
 	}
 
-	listenAndServe(srv)
-}
-
-func listenAndServe(srv *http.Server) {
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.WithError(err).Fatal("ListenAndServe failed")
 		}
 	}()
+
+	waitForShutdown(srv, p)
+}
+
+func waitForShutdown(srv *http.Server, p *player.Player) {
+
 	log.Info("Listen and serve")
 
 	shutdown := make(chan os.Signal, 1)
@@ -49,5 +57,6 @@ func listenAndServe(srv *http.Server) {
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.WithError(err).Fatal("Server shutdown failed")
 	}
+	p.Shutdown()
 	log.Info("Server shutdown")
 }

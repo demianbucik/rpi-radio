@@ -7,7 +7,16 @@ type contextKey struct {
 	name string
 }
 
-var RequestCtxKey = &contextKey{name: "RequestContext"}
+func (k *contextKey) String() string {
+	return k.name
+}
+
+var (
+	RequestCtxKey       = &contextKey{name: "RequestContext"}
+	PlaylistCtxKey      = &contextKey{name: "Playlist"}
+	TrackCtxKey         = &contextKey{name: "Track"}
+	PlaylistTrackCtxKey = &contextKey{name: "PlaylistTrack"}
+)
 
 type RequestContext struct {
 	Error      interface{}

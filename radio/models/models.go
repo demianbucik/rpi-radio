@@ -5,7 +5,7 @@ import (
 )
 
 type Track struct {
-	ID             uint
+	ID             int
 	Name           string
 	Url            string
 	Thumbnail      string
@@ -15,20 +15,28 @@ type Track struct {
 }
 
 type Playlist struct {
-	ID             uint
+	ID             int
 	Name           string
 	PlaylistTracks []*PlaylistTrack
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
 
+func (p *Playlist) GetTracks() []*Track {
+	var ts []*Track
+	for _, pt := range p.PlaylistTracks {
+		ts = append(ts, pt.Track)
+	}
+	return ts
+}
+
 type PlaylistTrack struct {
-	ID         uint
-	PlaylistID uint
+	ID         int
+	PlaylistID int
 	Playlist   *Playlist
-	TrackID    uint
+	TrackID    int
 	Track      *Track
-	Position   *uint
+	Position   *int
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
