@@ -1,10 +1,10 @@
 package models
 
 import (
-	"radio/app/config"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"radio/app/config"
 )
 
 func NewDB() (*gorm.DB, error) {
