@@ -19,12 +19,12 @@
               <img :src="track.thumbnail" width="100%" height="100%" id="BoxShadow" />
             </v-flex>
             <v-flex xs7 id="TrackTitle">
-              <p>{{ track.title }}</p>
+              <p>{{ track.name }}</p>
             </v-flex>
             <v-flex id="Buttons">
               <v-btn class="Buttons">play</v-btn>
               <v-btn class="Buttons">enqueue</v-btn>
-              <v-btn class="Buttons" @click="savetrack(track)">save</v-btn>
+              <v-btn class="Buttons" @click="saveTrack(track)">save</v-btn>
             </v-flex>
           </v-layout>
         </div>
@@ -33,9 +33,9 @@
   </div>
 </template>
 
-<script src="https://apis.google.com/js/api.js"></script>
 <script>
 import axios from 'axios';
+import { mapState, mapGetters } from 'vuex';
 const yturl = 'https://www.googleapis.com';
 
 export default {
@@ -45,6 +45,12 @@ export default {
       query: '',
       tracks: [],
     };
+  },
+  computed: {
+    ...mapState({
+      savedTracks: 'savedTracks',
+    }),
+    ...mapGetters(['getSavedTracks']),
   },
   methods: {
     search() {
@@ -60,12 +66,6 @@ export default {
         })
         .then((res) => {
           const trackIds = res.data.items.map((item) => item.id.videoId);
-          const tracks = res.data.items.map((item) => ({
-            id: item.id.videoId,
-            title: item.snippet.title,
-            thumbnail: item.snippet.thumbnails.medium.url,
-          }));
-
           axios
             .get(yturl + '/youtube/v3/videos', {
               params: {
@@ -76,16 +76,11 @@ export default {
               },
             })
             .then((vidRes) => {
-              const duration = vidRes.data.items.map((item) => ({
-                id: item.id,
-                duration: item.contentDetails.duration,
-              }));
-
               let tempObj = {};
               for (const item of res.data.items) {
                 tempObj[item.id.videoId] = {
                   id: item.id.videoId,
-                  title: item.snippet.title,
+                  name: item.snippet.title,
                   thumbnail: item.snippet.thumbnails.medium.url,
                 };
               }
@@ -103,12 +98,16 @@ export default {
         });
     },
 
-    savetrack(track) {
-      axios.post(`http://${process.env.SERVER_URL}/tracks`, {
-        name: track.title,
-        url: `https://www.youtube.com/watch?v=${track.id}`,
-        thumbnail: track.thumbnail,
-      });
+    saveTrack(track) {
+      axios
+        .post(`http://${process.env.SERVER_URL}/tracks`, {
+          name: track.name,
+          url: `https://www.youtube.com/watch?v=${track.id}`,
+          thumbnail: track.thumbnail,
+        })
+        .then((res) => {
+          this.$store.dispatch('pushSavedTrack', res.data);
+        });
     },
   },
 };

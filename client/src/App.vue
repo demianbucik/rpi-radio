@@ -9,6 +9,7 @@
 
 <script>
 import Sidebar from './components/Sidebar';
+import axios from 'axios';
 
 export default {
   name: 'App',
@@ -20,6 +21,11 @@ export default {
   data: () => ({
     //
   }),
+  created() {
+    axios.get(`http://${process.env.SERVER_URL}/tracks`).then((res) => {
+      this.$store.dispatch('setSavedTracks', res.data);
+    });
+  },
 };
 </script>
 

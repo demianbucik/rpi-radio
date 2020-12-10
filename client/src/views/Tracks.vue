@@ -34,16 +34,11 @@ export default {
     }),
     ...mapGetters(['getSavedTracks']),
   },
-  created() {
-    axios.get(`http://${process.env.SERVER_URL}/tracks`).then((res) => {
-      this.$store.dispatch('setSavedTracks', res.data);
-    });
-  },
   methods: {
     removeTrack(id) {
       axios.delete(`http://${process.env.SERVER_URL}/tracks/${id}`).then(() => {
         var index = this.savedTracks.findIndex((x) => x.id === id);
-        this.savedTracks.splice(index, 1);
+        this.$store.dispatch('removeSavedTrackAtIndex', index);
       });
     },
   },
