@@ -1,7 +1,9 @@
 <template>
   <div>
     <v-container v-for="savedTrack in savedTracks" :key="savedTrack.id">
-      <div>{{ savedTrack.name }}</div>
+      <div>
+        <marquee-text @click="none" class="NoSelect">{{ savedTrack.name }}</marquee-text>
+      </div>
     </v-container>
   </div>
 </template>
@@ -23,4 +25,13 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+#TrackButton {
+  max-width: 150px !important;
+}
+
+.NoSelect {
+  -webkit-user-select: none;
+  user-select: none;
+}
+</style>
