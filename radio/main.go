@@ -20,7 +20,7 @@ import (
 func main() {
 	app.Startup()
 
-	db, err := models.NewDB()
+	db, err := models.OpenDB()
 	if err != nil {
 		log.WithError(err).Fatal("Opening DB failed")
 	}

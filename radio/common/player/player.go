@@ -43,8 +43,8 @@ type Player struct {
 
 type State struct {
 	Tracks          []*models.Track
-	CurrentTrack    *int
-	CurrentPosition *float32
+	CurrentPosition *int
+	CurrentTime     *float32
 	Volume          *int
 	MediaState      *vlc.MediaState
 }
@@ -104,7 +104,7 @@ func (p *Player) GetState(includeTracks bool) *State {
 	defer p.mu.Unlock()
 
 	state := &State{
-		CurrentTrack: &p.trackIdx,
+		CurrentPosition: &p.trackIdx,
 	}
 
 	if mediaState, err := p.player.MediaState(); err == nil {
@@ -113,10 +113,10 @@ func (p *Player) GetState(includeTracks bool) *State {
 		log.WithError(err).Warn("GetState: failed to get media state")
 	}
 
-	if pos, err := p.player.MediaPosition(); err == nil {
-		state.CurrentPosition = &pos
+	if time, err := p.player.MediaPosition(); err == nil {
+		state.CurrentTime = &time
 	} else {
-		log.WithError(err).Warn("GetState: failed to get media position")
+		log.WithError(err).Warn("GetState: failed to get media time")
 	}
 
 	if vol, err := p.player.Volume(); err == nil {
@@ -191,7 +191,7 @@ func (p *Player) PlayPrevious() error {
 	return p.playPrevious()
 }
 
-func (p *Player) SetPosition(percentage float32) error {
+func (p *Player) SetTime(percentage float32) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 

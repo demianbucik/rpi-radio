@@ -105,15 +105,15 @@ func (a *Api) Previous(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, http.StatusOK, nil)
 }
 
-func (a *Api) SetPosition(w http.ResponseWriter, r *http.Request) {
+func (a *Api) SetTime(w http.ResponseWriter, r *http.Request) {
 	var dto struct {
-		Position float32 `json:"positionPercent"`
+		TimePercent float32 `json:"timePercent"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
 		utils.BadRequest(w, r, err)
 		return
 	}
-	if err := a.player.SetPosition(dto.Position); err != nil {
+	if err := a.player.SetTime(dto.TimePercent); err != nil {
 		if err == player.ErrMediaNotPlayingOrPaused {
 			utils.BadRequest(w, r, err)
 			return
