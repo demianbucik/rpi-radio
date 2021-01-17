@@ -1,7 +1,6 @@
 package api
 
 import (
-	"compress/gzip"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -22,7 +21,7 @@ func NewRouter(db *gorm.DB, p *commonPlayer.Player) *chi.Mux {
 	router.Use(utils.CORS)
 	router.Use(utils.Logger)
 	router.Use(utils.Recoverer)
-	router.Use(middleware.Compress(gzip.DefaultCompression))
+	// router.Use(middleware.Compress(gzip.DefaultCompression))
 	router.Use(middleware.Heartbeat("/ping"))
 
 	playlistsApi := playlists.New(db)
@@ -53,7 +52,7 @@ func playerRoutes(router chi.Router, playerApi *player.Api) {
 		r.Put("/tracks", playerApi.EnqueueTracks)
 		r.Delete("/tracks/{position:[0-9]+}", playerApi.DeleteTrack)
 
-		r.Put("/position", playerApi.SetPosition)
+		r.Put("/time", playerApi.SetTime)
 		r.Put("/volume", playerApi.SetVolume)
 
 		r.Get("/state", playerApi.State)

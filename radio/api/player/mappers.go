@@ -8,8 +8,8 @@ import (
 func StateToDto(state *player.State) *StateDto {
 	dto := &StateDto{
 		Tracks:          tracks.TracksToDtos(state.Tracks),
-		CurrentTrack:    state.CurrentTrack,
 		CurrentPosition: state.CurrentPosition,
+		CurrentTime:     state.CurrentTime,
 		Volume:          state.Volume,
 	}
 	for i, track := range dto.Tracks {
