@@ -1,5 +1,7 @@
 # rpi-radio
-YouTube music streaming for Raspberry Pi
+Music streaming from YouTube for Raspberry Pi
+
+This project is a work in progress.
 
 ## Radio server
 #### Running the server locally
@@ -16,7 +18,7 @@ Compile and run the binary. Some packages are using _cgo_, which means _gcc_ is 
 go build
 ./radio
 ```
-Or simply run with `go run main.go`. After running, the server listens for requests on _localhost:8000_.
+Or simply run with `go run main.go`. After running, the server listens for requests at _localhost:8000_.
 
 The app will be started in development mode. To start the app in production mode, set the environment variable `RADIO_ENV=prod`.
  
